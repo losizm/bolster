@@ -1,12 +1,13 @@
 organization := "com.github.losizm"
 name         := "bolster"
-version      := "1.1.0"
+version      := "2.0.0"
 description  := "For contextual security in Scala"
 homepage     := Some(url("https://github.com/losizm/bolster"))
 licenses     := List("Apache License, Version 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
-scalaVersion := "3.1.0"
+versionScheme := Some("early-semver")
 
+scalaVersion  := "3.1.0"
 scalacOptions := Seq("-deprecation", "-feature", "-new-syntax", "-Yno-experimental")
 
 Compile / doc / scalacOptions := Seq(

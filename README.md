@@ -4,26 +4,11 @@
 
 For contextual security in Scala.
 
-## Table of Contents
-- [Getting Started](#Getting-Started)
-- [How It Works](#How-It-Works)
-  - [Security in Action](#Security-in-Action)
-- [Permission](#Permission)
-  - [User and Group Permissions](#User-and-Group-Permissions)
-- [Security Context](#Security-Context)
-  - [Granting Any or All Permissions](#Granting-Any-or-All-Permissions)
-  - [Testing Permissions](#Testing-Permissions)
-  - [Automatic User and Group Permissions](#Automatic-User-and-Group-Permissions)
-  - [The Omnipotent Root Context](#The-Omnipotent-Root-Context)
-- [API Documentation](#API-Documentation)
-- [License](#License)
-
-
 ## Getting Started
 To get started, add **Bolster** to your library dependencies.
 
 ```scala
-libraryDependencies += "com.github.losizm" %% "bolster" % "1.1.0"
+libraryDependencies += "com.github.losizm" %% "bolster" % "2.0.0"
 ```
 
 ## How It Works
@@ -79,7 +64,7 @@ SecureCache.put("sucker mc", classic)
 ## Permission
 
 A `Permission` is identified by its name, and you're free to implement any
-convention for the names.
+naming convention.
 
 The following defines 3 permissions, any of which could be used as a
 permission for read access to an archive module:
