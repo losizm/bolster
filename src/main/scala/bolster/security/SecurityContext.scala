@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ergo.security
+package bolster.security
 
 /**
  * Defines context in which permissions are granted.
@@ -28,7 +28,7 @@ package ergo.security
  * could be implemented.
  *
  * {{{
- * import ergo.security.{ Permission, SecurityContext, UserContext }
+ * import bolster.security.{ Permission, SecurityContext, UserContext }
  *
  * import scala.collection.concurrent.TrieMap
  *

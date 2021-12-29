@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ergo.security
+package bolster.security
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -40,8 +40,8 @@ private class PermissionName(template: String): //
       .r
 
 private object PermissionName:
-  def user  = PermissionName(getTemplate("ergo.security.userPermissionTemplate", "<[[user=({})]]>"))
-  def group = PermissionName(getTemplate("ergo.security.groupPermissionTemplate", "<[[group=({})]]>"))
+  def user  = PermissionName(getTemplate("bolster.security.userPermissionTemplate", "<[[user=({})]]>"))
+  def group = PermissionName(getTemplate("bolster.security.groupPermissionTemplate", "<[[group=({})]]>"))
 
   private def getTemplate(name: String, default: => String): String =
     Try(sys.props(name).trim()).filter(checkTemplate).getOrElse(default)

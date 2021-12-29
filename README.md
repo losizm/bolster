@@ -1,8 +1,8 @@
-# Ergo
+# Bolster
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.losizm/bolster_3.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.github.losizm%22%20AND%20a:%22bolster_3%22)
 
 For contextual security in Scala.
-
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.losizm/ergo_3.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.github.losizm%22%20AND%20a:%22ergo_3%22)
 
 ## Table of Contents
 - [Getting Started](#Getting-Started)
@@ -20,15 +20,15 @@ For contextual security in Scala.
 
 
 ## Getting Started
-To get started, add **Ergo** to your library dependencies.
+To get started, add **Bolster** to your library dependencies.
 
 ```scala
-libraryDependencies += "com.github.losizm" %% "ergo" % "1.1.0"
+libraryDependencies += "com.github.losizm" %% "bolster" % "1.1.0"
 ```
 
 ## How It Works
 
-**Ergo** is powered by a pair of traits: `Permission` and
+**Bolster** is powered by a pair of traits: `Permission` and
 `SecurityContext`.
 
 A `Permission` is defined with a given name, and one or more permissions can be
@@ -44,7 +44,7 @@ The following script demonstrates how read/write access to an in-memory cache
 could be implemented:
 
 ```scala
-import ergo.security.{ Permission, SecurityContext, UserContext }
+import bolster.security.{ Permission, SecurityContext, UserContext }
 
 import scala.collection.concurrent.TrieMap
 
@@ -97,7 +97,7 @@ class: it's just a factory. It constructs a permission with a specially
 formatted name using a user identifier.
 
 ```scala
-import ergo.security.UserPermission
+import bolster.security.UserPermission
 
 val userPermission = UserPermission("lupita")
 
@@ -111,7 +111,7 @@ And `GroupPermission` constructs a permission with a specially formatted name
 using a group identifier.
 
 ```scala
-import ergo.security.GroupPermission
+import bolster.security.GroupPermission
 
 val groupPermission = GroupPermission("staff")
 
@@ -134,7 +134,7 @@ with supplied user and group identifiers along with a set of granted
 permissions.
 
 ```scala
-import ergo.security.{ Permission, SecurityContext, UserContext }
+import bolster.security.{ Permission, SecurityContext, UserContext }
 
 object BuildManager:
   private val buildPermission      = Permission("action=build")
@@ -184,7 +184,7 @@ supplied permissions is granted before an operation is applied.
 permissions are granted before an operation is applied.
 
 ```scala
-import ergo.security.{ Permission, SecurityContext, UserContext }
+import bolster.security.{ Permission, SecurityContext, UserContext }
 
 object FileManager:
   private val readOnlyPermission  = Permission("file:read-only")
@@ -222,7 +222,7 @@ precisely what `SecurityContext.test(Permission)` is for. It returns `true` or
 a security filter, as demonstrated in the following script:
 
 ```scala
-import ergo.security.{ Permission, SecurityContext, UserContext }
+import bolster.security.{ Permission, SecurityContext, UserContext }
 
 object SecureMessages:
   // Define class for text message with assigned permission
@@ -266,7 +266,7 @@ could be implemented giving a single user read/write permissions, while allowing
 other users in her group read permission only.
 
 ```scala
-import ergo.security.*
+import bolster.security.*
 
 import scala.collection.concurrent.TrieMap
 
@@ -326,7 +326,7 @@ simulate _sudo_ functionality. It does this by defining a group permission to
 regulate user access to `RootContext`.
 
 ```scala
-import ergo.security.*
+import bolster.security.*
 
 object sudo:
   // Define group permission required for sudo
@@ -367,9 +367,9 @@ sudo { implicit security =>
 
 ## API Documentation
 
-See [scaladoc](https://losizm.github.io/ergo/latest/api/ergo/security.html)
+See [scaladoc](https://losizm.github.io/bolster/latest/api/bolster/security.html)
 for additional details.
 
 ## License
-**Ergo** is licensed under the Apache License, Version 2. See [LICENSE](LICENSE)
+**Bolster** is licensed under the Apache License, Version 2. See [LICENSE](LICENSE)
 for more information.

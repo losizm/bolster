@@ -1,8 +1,8 @@
 organization := "com.github.losizm"
-name         := "ergo"
+name         := "bolster"
 version      := "1.1.0"
 description  := "For contextual security in Scala"
-homepage     := Some(url("https://github.com/losizm/ergo"))
+homepage     := Some(url("https://github.com/losizm/bolster"))
 licenses     := List("Apache License, Version 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 scalaVersion := "3.1.0"
@@ -28,8 +28,8 @@ developers := List(
 
 scmInfo := Some(
   ScmInfo(
-    url("https://github.com/losizm/ergo"),
-    "scm:git@github.com:losizm/ergo.git"
+    url("https://github.com/losizm/bolster"),
+    "scm:git@github.com:losizm/bolster.git"
   )
 )
 
