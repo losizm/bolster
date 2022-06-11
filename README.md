@@ -8,7 +8,7 @@ For contextual security in Scala.
 To get started, add **Bolster** to your library dependencies.
 
 ```scala
-libraryDependencies += "com.github.losizm" %% "bolster" % "2.0.0"
+libraryDependencies += "com.github.losizm" %% "bolster" % "3.0.0"
 ```
 
 ## How It Works
