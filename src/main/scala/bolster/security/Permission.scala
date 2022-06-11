@@ -73,6 +73,11 @@ object Permission:
  * to the resource can be restricted to the user.
  *
  * @see [[GroupPermission]]
+ *
+ * @note The user permission name is constructed using a template whose default
+ * value is `"<[[user=({})]]>"` where `"{}"` is replaced by supplied `userId`.
+ * Set the _bolster.security.userPermissionTemplate_ system property to override
+ * the default template.
  */
 object UserPermission:
   private lazy val name = PermissionName.user
@@ -118,6 +123,11 @@ object UserPermission:
  * read access to the resource can be restricted to the user's group.
  *
  * @see [[UserPermission]]
+ *
+ * @note The group permission name is constructed using a template whose default
+ * value is `"<[[group=({})]]>"` where `"{}"` is replaced by supplied `groupId`.
+ * Set the _bolster.security.groupPermissionTemplate_ system property to
+ * override the default template.
  */
 object GroupPermission:
   private lazy val name = PermissionName.group

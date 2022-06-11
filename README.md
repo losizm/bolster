@@ -25,8 +25,8 @@ performed only if its required permissions are granted; otherwise, a
 
 ### Security in Action
 
-The following script demonstrates how read/write access to an in-memory cache
-could be implemented:
+The following demonstrates how read/write access to an in-memory cache could be
+implemented:
 
 ```scala
 import bolster.security.{ Permission, SecurityContext, UserContext }
@@ -34,7 +34,7 @@ import bolster.security.{ Permission, SecurityContext, UserContext }
 import scala.collection.concurrent.TrieMap
 
 object SecureCache:
-  // Define permissions for reading and writing cache entries
+  // Define permissions to read and write cache entries
   private val getPermission = Permission("cache:get")
   private val putPermission = Permission("cache:put")
 
@@ -51,7 +51,7 @@ object SecureCache:
     // Test for write permission before putting cache entry
     security(putPermission) { cache += key -> value }
 
-// Set security context for user with read permission to cache
+// Set security context to user with read permission
 given SecurityContext = UserContext("lupita", "staff", Permission("cache:get"))
 
 // Get cache entry
@@ -72,14 +72,14 @@ permission for read access to an archive module:
 ```scala
 val perm1 = Permission("archive:read")
 val perm2 = Permission("module=archive; access=read")
-val perm3 = Permission("GET /api/modules/archive")
+val perm3 = Permission("GET /api/archive")
 ```
 
 ### User and Group Permissions
 
 A user permission is created with `UserPermission`. There's no implementing
 class: it's just a factory. It constructs a permission with a specially
-formatted name using a user identifier.
+formatted name using a user identifier.<sup>&dagger;</sup>
 
 ```scala
 import bolster.security.UserPermission
@@ -89,11 +89,11 @@ val userPermission = UserPermission("lupita")
 // Destructure permission to its user identifier
 userPermission match
   case UserPermission(userId) => println(s"uid=$userId")
-  case _                      => throw Exception("Not a user permission")
+  case _                      => println("Not a user permission!")
 ```
 
 And `GroupPermission` constructs a permission with a specially formatted name
-using a group identifier.
+using a group identifier.<sup>&ddagger;</sup>
 
 ```scala
 import bolster.security.GroupPermission
@@ -103,10 +103,20 @@ val groupPermission = GroupPermission("staff")
 // Destructure permission to its group identifier
 groupPermission match
   case GroupPermission(groupId) => println(s"gid=$groupId")
-  case _                        => throw Exception("Not a group permission")
+  case _                        => println("Not a group permission!")
 ```
 
 See also [Automatic User and Group Permissions](#Automatic-User-and-Group-Permissions).
+
+<small>&dagger; The user permission name is constructed using a template whose
+default value is `"<[[user=({})]]>"` where `"{}"` is replaced by supplied user
+identifier. Set the _bolster.security.userPermissionTemplate_ system property to
+override the default template.</small>
+
+<small>&ddagger; The group permission name is constructed using a template whose
+default value is `"<[[group=({})]]>"` where `"{}"` is replaced by supplied group
+identifier. Set the _bolster.security.groupPermissionTemplate_ system property to
+override the default template.</small>
 
 ## Security Context
 
@@ -144,7 +154,7 @@ object BuildManager:
       println(s"Deploy $project to prod environment.")
     }
 
-// Set security context for user with two permissions
+// Set security context to user with two permissions
 given SecurityContext = UserContext("ishmael", "developer",
   Permission("action=build"),
   Permission("action=deploy; env=dev")
@@ -188,7 +198,7 @@ object FileManager:
       println(s"Encrypt $fileName.")
     }
 
-// Set security context for read/write permission
+// Set security context to user with read/write permission
 given SecurityContext = UserContext("isaac", "ops", Permission("file:read-write"))
 
 // Can read via read-write permission
@@ -200,11 +210,11 @@ FileManager.encrypt("/etc/passwd")
 
 ### Testing Permissions
 
-Sometimes, it may be enough to simply test a permission to see whether it is
+Sometimes it may be enough to simply test a permission to see whether it is
 granted, and not necessarily throw a `SecurityViolation` if it isn't. That's
 precisely what `SecurityContext.test(Permission)` is for. It returns `true` or
 `false` based on the permission being granted or not. It's an ideal predicate to
-a security filter, as demonstrated in the following script:
+a security filter, as demonstrated in the following:
 
 ```scala
 import bolster.security.{ Permission, SecurityContext, UserContext }
@@ -223,7 +233,7 @@ object SecureMessages:
     // Filter messages by testing permission
     messages.filter(msg => security.test(msg.permission)).map(_.text)
 
-// Set security context for user with "public" and "protected" permissions
+// Set security context to user with "public" and "protected" permissions
 given SecurityContext = UserContext("lupita", "staff",
   Permission("public"),
   Permission("protected")
@@ -284,14 +294,13 @@ docs.get("meeting-agenda.txt")
 ### The Omnipotent Root Context
 
 In the examples so far, we've used `UserContext`, which is a security context
-with a finite set of granted permissions.
+with a defined set of granted permissions.
 
-The other type of security context is `RootContext`, which has an infinite set
-of granted permissions. Rather, there's no permission it doesn't have. It's the
-_superuser_ security context.
+The other type of security context is `RootContext` for which all permissions
+are granted. It's the _superuser_ security context.
 
-`RootContext` is an object implementation, so there is only one instance of it.
-It should be used to effectively bypass security checks.
+`RootContext` is an object implementation, so there is only one instance. It
+should be used to effectively bypass security checks.
 
 ```scala
 // Print all messages
@@ -306,9 +315,9 @@ SecureMessages.list(using RootContext).foreach(println)
 }
 ```
 
-The next script is a more intricate example. It demonstrates how to
-simulate _sudo_ functionality. It does this by defining a group permission to
-regulate user access to `RootContext`.
+The following is a more intricate example. It demonstrates how to simulate
+_sudo_ functionality. It does this by defining a group permission to regulate
+user access to `RootContext`.
 
 ```scala
 import bolster.security.*

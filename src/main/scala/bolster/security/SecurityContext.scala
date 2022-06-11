@@ -18,14 +18,12 @@ package bolster.security
 /**
  * Defines context in which permissions are granted.
  *
- * ### Security in Action
- *
  * A `SecurityContext` establishes a pattern in which a restricted operation is
  * performed only if its required permissions are granted; otherwise, a
  * [[SecurityViolation]] is raised.
  *
- * The following script demonstrates how read/write access to an in-memory cache
- * could be implemented.
+ * The following demonstrates how read/write access to an in-memory cache could
+ * be implemented.
  *
  * {{{
  * import bolster.security.{ Permission, SecurityContext, UserContext }
@@ -33,7 +31,7 @@ package bolster.security
  * import scala.collection.concurrent.TrieMap
  *
  * object SecureCache:
- *   // Define permissions for reading and writing cache entries
+ *   // Define permissions to read and write cache entries
  *   private val getPermission = Permission("cache:get")
  *   private val putPermission = Permission("cache:put")
  *
@@ -50,7 +48,7 @@ package bolster.security
  *     // Test for write permission before putting cache entry
  *     security(putPermission) { cache += key -> value }
  *
- * // Set security context for user with read permission to cache
+ * // Set security context to user with read permission
  * given SecurityContext = UserContext("lupita", "staff", Permission("cache:get"))
  *
  * // Get cache entry
@@ -245,7 +243,8 @@ object UserContext:
    * @param userId user identifier
    * @param groupId group identifier
    *
-   * @note User and group permissions added to security context.
+   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
+   * are added to security context.
    */
   def apply(userId: String, groupId: String): UserContext =
     apply(userId, groupId, Set.empty[Permission])
@@ -257,7 +256,8 @@ object UserContext:
    * @param groupId group identifier
    * @param permissions permissions
    *
-   * @note User and group permissions are added to set of supplied permissions.
+   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
+   * are added to set of supplied permissions.
    */
   def apply(userId: String, groupId: String, permissions: Set[Permission]): UserContext =
     val uid = userId.trim()
@@ -273,7 +273,8 @@ object UserContext:
    * @param one permission
    * @param more additional permissions
    *
-   * @note User and group permissions are added to set of supplied permissions.
+   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
+   * are added to set of supplied permissions.
    */
   def apply(userId: String, groupId: String, one: Permission, more: Permission*): UserContext =
     apply(userId, groupId, (one +: more).toSet)
