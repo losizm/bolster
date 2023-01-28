@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Carlos Conyers
+ * Copyright 2023 Carlos Conyers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package bolster.security
  * Defines context in which permissions are granted.
  *
  * A `SecurityContext` establishes a pattern in which a restricted operation is
- * performed only if its required permissions are granted; otherwise, a
+ * performed only if required permissions are granted; otherwise, a
  * [[SecurityViolation]] is raised.
  *
  * The following demonstrates how read/write access to an in-memory cache could
@@ -48,19 +48,19 @@ package bolster.security
  *     // Test for write permission before putting cache entry
  *     security(putPermission) { cache += key -> value }
  *
- * // Set security context to user with read permission
- * given SecurityContext = UserContext("lupita", "staff", Permission("cache:get"))
+ * // Set security context to include read permission
+ * given SecurityContext = UserContext(Permission("cache:get"))
  *
  * // Get cache entry
  * val classic = SecureCache.get("gang starr")
  *
- * // Throw SecurityViolation because user lacks write permission
+ * // Throw SecurityViolation because write permission is not granted
  * SecureCache.put("sucker mc", classic)
  * }}}
  */
 sealed trait SecurityContext:
   /**
-   * Tests whether given permission is granted.
+   * Tests whether supplied permission is granted.
    *
    * @param perm permission
    *
@@ -77,14 +77,11 @@ sealed trait SecurityContext:
    * @param perm permission
    * @param op operation
    *
-   * @return value of operation
+   * @return operation value
    *
    * @throws SecurityViolation if permission is not granted
    */
-  def apply[T](perm: Permission)(op: => T): T =
-    test(perm) match
-      case true  => op
-      case false => throw SecurityViolation(s"Permission not granted: $perm")
+  def apply[T](perm: Permission)(op: => T): T
 
   /**
    * Tests permissions before applying operation.
@@ -95,16 +92,13 @@ sealed trait SecurityContext:
    * @param perms permissions
    * @param op operation
    *
-   * @return value of operation
+   * @return operation value
    *
    * @throws SecurityViolation if no permission is granted
    *
    * @note The operation is authorized if `perms` is empty.
    */
-  def any[T](perms: Set[Permission])(op: => T): T =
-    (perms.isEmpty || perms.exists(test)) match
-      case true  => op
-      case false => throw SecurityViolation(s"No permission granted: ${perms.mkString(", ")}")
+  def any[T](perms: Set[Permission])(op: => T): T
 
   /**
    * Tests permissions before applying operation.
@@ -116,12 +110,11 @@ sealed trait SecurityContext:
    * @param more additional permissions
    * @param op operation
    *
-   * @return value of operation
+   * @return operation value
    *
    * @throws SecurityViolation if no permission is granted
    */
-  def any[T](one: Permission, more: Permission*)(op: => T): T =
-    any((one +: more).toSet)(op)
+  def any[T](one: Permission, more: Permission*)(op: => T): T
 
   /**
    * Tests permissions before applying operation.
@@ -132,16 +125,13 @@ sealed trait SecurityContext:
    * @param perms permissions
    * @param op operation
    *
-   * @return value of operation
+   * @return operation value
    *
    * @throws SecurityViolation if all permissions are not granted
    *
    * @note The operation is authorized if `perms` is empty.
    */
-  def all[T](perms: Set[Permission])(op: => T): T =
-    perms.find(!test(_)) match
-      case Some(perm) => throw SecurityViolation(s"Permission not granted: $perm")
-      case None       => op
+  def all[T](perms: Set[Permission])(op: => T): T
 
   /**
    * Tests permissions before applying operation.
@@ -153,12 +143,11 @@ sealed trait SecurityContext:
    * @param more additional permissions
    * @param op operation
    *
-   * @return value of operation
+   * @return operation value
    *
    * @throws SecurityViolation if all permissions are not granted
    */
-  def all[T](one: Permission, more: Permission*)(op: => T): T =
-    all((one +: more).toSet)(op)
+  def all[T](one: Permission, more: Permission*)(op: => T): T
 
 /**
  * Defines root context in which all permissions are granted.
@@ -166,12 +155,23 @@ sealed trait SecurityContext:
  * @see [[UserContext]]
  */
 object RootContext extends SecurityContext:
-  /**
-   * @inheritdoc
-   *
-   * @return `true`
-   */
+  /** @inheritdoc */
   def test(perm: Permission): Boolean = true
+
+  /** @inheritdoc */
+  def apply[T](perm: Permission)(op: => T): T = op
+
+  /** @inheritdoc */
+  def any[T](perms: Set[Permission])(op: => T): T = op
+
+  /** @inheritdoc */
+  def any[T](one: Permission, more: Permission*)(op: => T): T = op
+
+  /** @inheritdoc */
+  def all[T](perms: Set[Permission])(op: => T): T = op
+
+  /** @inheritdoc */
+  def all[T](one: Permission, more: Permission*)(op: => T): T = op
 
   /** Gets string representation. */
   override val toString = "RootContext"
@@ -182,12 +182,6 @@ object RootContext extends SecurityContext:
  * @see [[RootContext]]
  */
 sealed trait UserContext extends SecurityContext:
-  /** Gets user identifier. */
-  def userId: String
-
-  /** Gets group identifier. */
-  def groupId: String
-
   /** Gets permissions. */
   def permissions: Set[Permission]
 
@@ -205,13 +199,12 @@ sealed trait UserContext extends SecurityContext:
    * Creates new security context by adding supplied permissions to existing set
    * of permissions.
    *
-   * @param one permission
+   * @param one  permission
    * @param more additional permissions
    *
    * @return new security context
    */
-  def grant(one: Permission, more: Permission*): UserContext =
-    grant((one +: more).toSet)
+  def grant(one: Permission, more: Permission*): UserContext
 
   /**
    * Creates new security context by removing supplied permissions from existing
@@ -227,80 +220,84 @@ sealed trait UserContext extends SecurityContext:
    * Creates new security context by removing supplied permissions from existing
    * set of permissions.
    *
-   * @param one permission
+   * @param one  permission
    * @param more additional permissions
    *
    * @return new security context
    */
-  def revoke(one: Permission, more: Permission*): UserContext =
-    revoke((one +: more).toSet)
+  def revoke(one: Permission, more: Permission*): UserContext
 
-/** Provides `UserContext` factory. */
+/** Provides user context factory. */
 object UserContext:
   /**
-   * Creates `UserContext` with supplied identity.
+   * Creates user context with supplied permissions.
    *
-   * @param userId user identifier
-   * @param groupId group identifier
-   *
-   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
-   * are added to security context.
+   * @param perms permissions
    */
-  def apply(userId: String, groupId: String): UserContext =
-    apply(userId, groupId, Set.empty[Permission])
+  def apply(perms: Set[Permission]): UserContext =
+    UserContextImpl(perms)
 
   /**
-   * Creates `UserContext` with supplied identity and permissions.
+   * Creates user context with supplied permissions.
    *
-   * @param userId user identifier
-   * @param groupId group identifier
-   * @param permissions permissions
-   *
-   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
-   * are added to set of supplied permissions.
-   */
-  def apply(userId: String, groupId: String, permissions: Set[Permission]): UserContext =
-    val uid = userId.trim()
-    val gid = groupId.trim()
-
-    UserContextImpl(uid, gid, permissions + UserPermission(uid) + GroupPermission(gid))
-
-  /**
-   * Creates `UserContext` with supplied identity and permissions.
-   *
-   * @param userId user identifier
-   * @param groupId group identifier
    * @param one permission
    * @param more additional permissions
-   *
-   * @note [[UserPermission UserPermission(userId)]] and [[GroupPermission GroupPermission(groupId)]]
-   * are added to set of supplied permissions.
    */
-  def apply(userId: String, groupId: String, one: Permission, more: Permission*): UserContext =
-    apply(userId, groupId, (one +: more).toSet)
+  def apply(perms: Seq[Permission]): UserContext =
+    apply(perms.toSet)
 
   /**
-   * Destructures user context to its `userId`, `groupId`, and `permissions`.
+   * Creates user context with supplied permissions.
+   *
+   * @param one permission
+   * @param more additional permissions
+   */
+  def apply(one: Permission, more: Permission*): UserContext =
+    apply((one +: more).toSet)
+
+  /**
+   * Destructures user context to its permissions.
    *
    * @param security user context
    */
-  def unapply(security: UserContext): Option[(String, String, Set[Permission])] =
-    security match
-      case null => None
-      case _    => Some((security.userId, security.groupId, security.permissions))
+  def unapply(security: UserContext): Option[Set[Permission]] =
+    Some(security.permissions)
 
-private case class UserContextImpl(userId: String, groupId: String, permissions: Set[Permission]) extends UserContext:
-  permissions.collect {
-    case UserPermission(uid) => require(uid == userId, s"Conflicting user permission: $uid")
-  }
-
+private case class UserContextImpl(permissions: Set[Permission]) extends UserContext:
   def test(perm: Permission): Boolean =
     permissions.contains(perm)
+
+  def apply[T](perm: Permission)(op: => T): T =
+    test(perm) match
+      case true  => op
+      case false => throw SecurityViolation(s"Permission not granted: ${perm.name}")
+
+  def any[T](perms: Set[Permission])(op: => T): T =
+    (perms.isEmpty || perms.exists(test)) match
+      case true  => op
+      case false => throw SecurityViolation(s"None of permissions granted: ${perms.map(_.name).mkString(", ")}")
+
+  def any[T](one: Permission, more: Permission*)(op: => T): T =
+    any((one +: more).toSet)(op)
+
+  def all[T](perms: Set[Permission])(op: => T): T =
+    perms.find(!test(_)) match
+      case Some(perm) => throw SecurityViolation(s"Permission not granted: ${perm.name}")
+      case None       => op
+
+  def all[T](one: Permission, more: Permission*)(op: => T): T =
+    all((one +: more).toSet)(op)
 
   def grant(perms: Set[Permission]): UserContext =
     copy(permissions = permissions ++ perms)
 
-  def revoke(perms: Set[Permission]): UserContext =
-    copy(permissions = (permissions &~ perms) + UserPermission(userId) + GroupPermission(groupId))
+  def grant(one: Permission, more: Permission*): UserContext =
+    grant((one +: more).toSet)
 
-  override lazy val toString = s"UserContext($userId,$groupId,$permissions)"
+  def revoke(perms: Set[Permission]): UserContext =
+    copy(permissions = permissions &~ perms)
+
+  def revoke(one: Permission, more: Permission*): UserContext =
+    revoke((one +: more).toSet)
+
+  override lazy val toString = s"UserContext($permissions)"
