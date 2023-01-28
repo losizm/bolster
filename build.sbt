@@ -16,7 +16,7 @@ Compile / doc / scalacOptions := Seq(
   "-project-logo", "images/logo.svg"
 )
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % "test"
 
 developers := List(
   Developer(
