@@ -1,6 +1,6 @@
 # Bolster
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.losizm/bolster_3.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.github.losizm%22%20AND%20a:%22bolster_3%22)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.losizm/bolster_3.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=g:com.github.losizm%20a:bolster_3)
 
 For contextual security in Scala.
 
@@ -8,7 +8,7 @@ For contextual security in Scala.
 To get started, add **Bolster** to your library dependencies.
 
 ```scala
-libraryDependencies += "com.github.losizm" %% "bolster" % "4.0.0"
+libraryDependencies += "com.github.losizm" %% "bolster" % "5.0.0"
 ```
 
 ## How It Works
