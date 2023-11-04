@@ -69,6 +69,52 @@ sealed trait SecurityContext:
   def test(perm: Permission): Boolean
 
   /**
+   * Tests whether any of supplied permissions is granted.
+   *
+   * @param perms permissions
+   *
+   * @return `true` if any permission is granted; otherwise, `false`
+   *
+   * @note Test succeeds if `perms` is empty.
+   */
+  def testAny(perms: Set[Permission]): Boolean
+
+  /**
+   * Tests whether any of supplied permissions is granted.
+   *
+   * @param one permission
+   * @param more additional permissions
+   *
+   * @return `true` if any permission is granted; otherwise, `false`
+   *
+   * @note Test succeeds if `perms` is empty.
+   */
+  def testAny(one: Permission, more: Permission*): Boolean
+
+  /**
+   * Tests whether all supplied permissions are granted.
+   *
+   * @param perms permissions
+   *
+   * @return `true` if all permissions are granted; otherwise, `false`
+   *
+   * @note Test succeeds if `perms` is empty.
+   */
+  def testAll(perms: Set[Permission]): Boolean
+
+  /**
+   * Tests whether all supplied permissions are granted.
+   *
+   * @param one permission
+   * @param more additional permissions
+   *
+   * @return `true` if all permissions are granted; otherwise, `false`
+   *
+   * @note Test succeeds if `perms` is empty.
+   */
+  def testAll(one: Permission, more: Permission*): Boolean
+
+  /**
    * Tests permission before applying operation.
    *
    * If supplied permission is granted, the operation is applied; otherwise,
@@ -96,7 +142,7 @@ sealed trait SecurityContext:
    *
    * @throws SecurityViolation if no permission is granted
    *
-   * @note The operation is authorized if `perms` is empty.
+   * @note Operation is authorized if `perms` is empty.
    */
   def any[T](perms: Set[Permission])(op: => T): T
 
@@ -113,6 +159,8 @@ sealed trait SecurityContext:
    * @return operation value
    *
    * @throws SecurityViolation if no permission is granted
+   *
+   * @note Operation is authorized if `perms` is empty.
    */
   def any[T](one: Permission, more: Permission*)(op: => T): T
 
@@ -129,7 +177,7 @@ sealed trait SecurityContext:
    *
    * @throws SecurityViolation if all permissions are not granted
    *
-   * @note The operation is authorized if `perms` is empty.
+   * @note Operation is authorized if `perms` is empty.
    */
   def all[T](perms: Set[Permission])(op: => T): T
 
@@ -146,6 +194,8 @@ sealed trait SecurityContext:
    * @return operation value
    *
    * @throws SecurityViolation if all permissions are not granted
+   *
+   * @note Operation is authorized if `perms` is empty.
    */
   def all[T](one: Permission, more: Permission*)(op: => T): T
 
@@ -157,6 +207,18 @@ sealed trait SecurityContext:
 object RootContext extends SecurityContext:
   /** @inheritdoc */
   def test(perm: Permission): Boolean = true
+
+  /** @inheritdoc */
+  def testAny(perms: Set[Permission]): Boolean = true
+
+  /** @inheritdoc */
+  def testAny(one: Permission, more: Permission*): Boolean = true
+
+  /** @inheritdoc */
+  def testAll(perms: Set[Permission]): Boolean = true
+
+  /** @inheritdoc */
+  def testAll(one: Permission, more: Permission*): Boolean = true
 
   /** @inheritdoc */
   def apply[T](perm: Permission)(op: => T): T = op
@@ -273,6 +335,18 @@ object UserContext:
 private case class UserContextImpl(permissions: Set[Permission]) extends UserContext:
   def test(perm: Permission): Boolean =
     permissions.contains(perm)
+
+  def testAny(perms: Set[Permission]): Boolean =
+    perms.isEmpty || perms.exists(permissions.contains)
+
+  def testAny(one: Permission, more: Permission*): Boolean =
+    testAny((one +: more).toSet)
+
+  def testAll(perms: Set[Permission]): Boolean =
+    perms.forall(permissions.contains)
+
+  def testAll(one: Permission, more: Permission*): Boolean =
+    testAll((one +: more).toSet)
 
   def apply[T](perm: Permission)(op: => T): T =
     test(perm) match
