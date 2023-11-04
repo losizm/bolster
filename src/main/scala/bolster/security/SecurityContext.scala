@@ -229,13 +229,20 @@ sealed trait UserContext extends SecurityContext:
 
 /** Provides user context factory. */
 object UserContext:
+  private val emptyUserContext = UserContextImpl(Set.empty)
+
+  /** Gets empty user context. */
+  def empty: UserContext = emptyUserContext
+
   /**
    * Creates user context with supplied permissions.
    *
    * @param perms permissions
    */
   def apply(perms: Set[Permission]): UserContext =
-    UserContextImpl(perms)
+    perms.isEmpty match
+      case true  => empty
+      case false => UserContextImpl(perms)
 
   /**
    * Creates user context with supplied permissions.
