@@ -29,6 +29,37 @@ class SecurityContextSpec extends org.scalatest.flatspec.AnyFlatSpec:
   val security = UserContext(lupita, staff, select, update)
   val empty = Set.empty[Permission]
 
+  it should "get empty user context" in {
+    val s1 = UserContext.empty
+    val s2 = UserContext(empty)
+
+    assert { s1 == UserContext.empty }
+    assert { s2 == UserContext.empty }
+
+    assert { s1.permissions.isEmpty }
+    assert { !s1.test(insert) }
+    assert { !s1.test(update) }
+    assert { !s1.test(delete) }
+
+    assert { s1.testAny(empty) }
+    assert { !s1.testAny(insert) }
+    assert { !s1.testAny(insert, update, delete) }
+
+    assert { s1.testAll(empty) }
+    assert { !s1.testAll(insert) }
+    assert { !s1.testAll(insert, update, delete) }
+
+    assertThrows[SecurityViolation] { s1(insert)(1) }
+
+    assert { s1.any(empty)(1) == 1 }
+    assertThrows[SecurityViolation] { s1.any(insert)(1) }
+    assertThrows[SecurityViolation] { s1.any(insert, update, delete)(1) }
+
+    assert { s1.all(empty)(1) == 1 }
+    assertThrows[SecurityViolation] { s1.all(insert)(1) }
+    assertThrows[SecurityViolation] { s1.all(insert, update, delete)(1) }
+  }
+
   it should "create user context" in {
     val s1 = UserContext(lupita, staff, select, update)
     assert(s1.test(lupita))
@@ -134,6 +165,29 @@ class SecurityContextSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assertThrows[SecurityViolation] { security(wheel)(1) }
   }
 
+  it should "test for any permission" in {
+    assert { security.testAny(select, create, insert) }
+    assert { security.testAny(insert, select, create) }
+    assert { security.testAny(create, insert, select) }
+
+    assert { security.testAny(select, create, update) }
+    assert { security.testAny(update, select, create) }
+    assert { security.testAny(create, update, select) }
+
+    assert { security.testAny(select, update) }
+    assert { security.testAny(update, select) }
+
+    assert { security.testAny(select) }
+    assert { security.testAny(update) }
+
+    assert { security.testAny(empty) }
+
+    assert { !security.testAny(insert, create, delete) }
+    assert { !security.testAny(insert, create) }
+    assert { !security.testAny(insert) }
+    assert { !security.testAny(root, wheel) }
+  }
+
   it should "authorize operation for any permission" in {
     assert { security.any(select, create, insert)(1) == 1 }
     assert { security.any(insert, select, create)(1) == 1 }
@@ -157,6 +211,34 @@ class SecurityContextSpec extends org.scalatest.flatspec.AnyFlatSpec:
     assertThrows[SecurityViolation] { security.any(insert, create)(1) }
     assertThrows[SecurityViolation] { security.any(insert)(1) }
     assertThrows[SecurityViolation] { security.any(root, wheel)(1) }
+  }
+
+  it should "test for all permissions" in {
+    assert { security.testAll(select, update) }
+    assert { security.testAll(update, select) }
+
+    assert { security.testAll(update, select, update) }
+
+    assert { security.testAll(select) }
+    assert { security.testAll(update) }
+
+    assert { security.testAll(empty) }
+
+    assert { !security.testAll(select, create, insert) }
+    assert { !security.testAll(insert, select, create) }
+    assert { !security.testAll(create, insert, select) }
+
+    assert { !security.testAll(select, create, update) }
+    assert { !security.testAll(update, select, create) }
+    assert { !security.testAll(create, update, select) }
+
+    assert { !security.testAll(insert, update) }
+    assert { !security.testAll(update, insert) }
+    assert { !security.testAll(insert, select) }
+    assert { !security.testAll(select, insert) }
+
+    assert { !security.testAll(create) }
+    assert { !security.testAll(insert) }
   }
 
   it should "authorize operation for all permissions" in {
