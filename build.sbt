@@ -1,6 +1,6 @@
 organization := "com.github.losizm"
 name         := "bolster"
-version      := "5.0.0"
+version      := "5.1.0"
 description  := "For contextual security in Scala"
 homepage     := Some(url("https://github.com/losizm/bolster"))
 licenses     := List("Apache License, Version 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
